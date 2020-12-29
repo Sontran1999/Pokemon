@@ -5,7 +5,7 @@ import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 
-class Pokemons {
+class PokemonResponse {
     @SerializedName("count")
     @Expose
     var count: Int? = null
@@ -20,6 +20,6 @@ class Pokemons {
 
     @SerializedName("results")
     @Expose
-    var results: List<Result>? = null
+    var results: List<Pokemon>? = null
 
 }
