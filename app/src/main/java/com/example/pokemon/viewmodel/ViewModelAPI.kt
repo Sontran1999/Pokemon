@@ -1,8 +1,10 @@
 package com.example.pokemon.viewmodel
 
 import android.util.Log
+import android.widget.Adapter
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.pokemon.adapter.PokemonAdapter
 import com.example.pokemon.models.pokemons.PokemonResponse
 import com.example.pokemon.api.APIService
 import com.example.pokemon.api.ApiUtils
@@ -14,12 +16,14 @@ import retrofit2.Response
 class ViewModelAPI : ViewModel() {
     private val apiService: APIService = ApiUtils().getAPIService()
     var pokemons: MutableLiveData<List<Pokemon>?> = MutableLiveData()
+    var detailPokemon: MutableLiveData<DetailPokemon?> = MutableLiveData()
 
-    fun getAllPokemon() {
-        apiService.getPokemon()
+    fun getAllPokemon(listSize: Int) {
+        apiService.getPokemon(listSize,20
+        )
             .enqueue(object : retrofit2.Callback<PokemonResponse> {
                 override fun onFailure(call: Call<PokemonResponse>, t: Throwable) {
-                    Log.d("pokemon", "error loading from ApPI")
+                    Log.d("pokemon", "error loading from API getAll")
                     pokemons.postValue(null)
                 }
 
@@ -28,18 +32,18 @@ class ViewModelAPI : ViewModel() {
                     response: Response<PokemonResponse>
                 ) {
                     if (response.isSuccessful) {
-                        Log.d("pokemon", "pokemon loaded from ApPI")
+                        Log.d("pokemon", "pokemon loaded from API")
                         response.body()?.results?.let { _result ->
 
-                            _result.map { _pokemon ->
-                                val _pokemonId = "/\\d+/$".toRegex().find(_pokemon.url ?: "")?.value
+                            _result.map { pokemon ->
+                                val pokemonId = "/\\d+/$".toRegex().find(pokemon.url ?: "")?.value
 
-                                _pokemonId?.apply {
-                                    _pokemon.id = substring(1, _pokemonId.length - 1).toInt()
-                                    getDetailPokemon(_pokemon.id)
+                                pokemonId?.apply {
+                                    pokemon.id = substring(1, pokemonId.length - 1)
+                                    getDetailPokemon(pokemon.id.toString())
                                 }
 
-                                return@map _pokemon
+                                return@map pokemon
                             }
 
                             pokemons.postValue(_result)
@@ -53,13 +57,11 @@ class ViewModelAPI : ViewModel() {
             })
     }
 
-    fun getDetailPokemon(pokemonId: Int) {
-        Log.d("Binh", "Pokemon: $pokemonId")
-
+    fun getDetailPokemon(pokemonId: String) {
         apiService.getDetailPokemon(pokemonId)
             .enqueue(object : retrofit2.Callback<DetailPokemon> {
                 override fun onFailure(call: Call<DetailPokemon>, t: Throwable) {
-                    Log.d("", "error loading from ApPI")
+                    Log.d("", "error loading from API getDetail")
                 }
 
                 override fun onResponse(
@@ -67,24 +69,37 @@ class ViewModelAPI : ViewModel() {
                     response: Response<DetailPokemon>
                 ) {
                     if (response.isSuccessful) {
-                        Log.d("aaa", "pokemon loaded from ApPI $pokemonId")
-                        response.body()?.let { _detail ->
-                            pokemons.value?.let { _pokemonList ->
-                                pokemons.postValue(_pokemonList.map { _pokemon ->
-                                    if (_pokemon.id == pokemonId) {
-                                        _pokemon.detailPokemon = _detail
+                        Log.d("aaa", "pokemon loaded from API $pokemonId")
+                        response.body()?.let { detail ->
+                            pokemons.value?.let { pokemonList ->
+                                pokemons.postValue(pokemonList.map { pokemon ->
+                                    if (pokemon.id.equals(pokemonId)) {
+                                        pokemon.detailPokemon = detail
                                     }
 
-                                    return@map _pokemon
+                                    return@map pokemon
                                 })
                             }
                         }
+                        detailPokemon.postValue(response.body())
                     } else {
                         Log.d("aaa", response.message() + response.code())
                     }
                 }
 
             })
+    }
 
+    fun searchPokemon(query: String, list: MutableList<Pokemon>){
+        var listSearch: MutableList<Pokemon> = mutableListOf()
+            list?.forEachIndexed { index, pokemon ->
+                var name = pokemon.name.toString()
+                if (query.toUpperCase().equals(name.toUpperCase())) {
+                    listSearch.add(pokemon)
+                } else if (query.toLowerCase().equals(name.toLowerCase())) {
+                    listSearch.add(pokemon)
+                }
+            }
+            pokemons.postValue(listSearch)
     }
 }

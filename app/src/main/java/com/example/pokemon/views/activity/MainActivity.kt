@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
                 var intent = Intent(this@MainActivity, PokemonActivity::class.java)
                 startActivity(intent)
                 finish()
-//                overridePendingTransition(R.anim.anim_alpha_in,R.anim.anim_alpha_out)
+                overridePendingTransition(R.anim.anim_alpha_in,R.anim.anim_alpha_out)
 
             }
 
