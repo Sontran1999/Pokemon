@@ -9,7 +9,7 @@ import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import com.example.pokemon.R
 
-class MovesFragment : Fragment() {
+class MovesFragment() : Fragment() {
 
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)

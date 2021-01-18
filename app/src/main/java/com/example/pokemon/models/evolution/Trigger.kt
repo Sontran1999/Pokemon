@@ -1,16 +1,16 @@
-package com.example.pokemon.models.Ability
+package com.example.pokemon.models.evolution
 
 import com.google.gson.annotations.Expose
 
 import com.google.gson.annotations.SerializedName
 
 
-class Name {
-    @SerializedName("language")
-    @Expose
-    var language: Language? = null
-
+class Trigger {
     @SerializedName("name")
     @Expose
     var name: String? = null
+
+    @SerializedName("url")
+    @Expose
+    var url: String? = null
 }

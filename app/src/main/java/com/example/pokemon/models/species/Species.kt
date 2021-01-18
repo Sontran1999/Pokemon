@@ -3,9 +3,10 @@ package com.example.pokemon.models.species
 import com.google.gson.annotations.Expose
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 
-class Species {
+class Species : Serializable {
     @SerializedName("base_happiness")
     @Expose
     var baseHappiness: Int? = null

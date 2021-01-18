@@ -2,7 +2,8 @@ package com.example.pokemon.api
 
 import com.example.pokemon.models.detailpokemon.Abilities
 import com.example.pokemon.models.detailpokemon.DetailPokemon
-import com.example.pokemon.models.detailpokemon.Species
+import com.example.pokemon.models.evolution.Evolution
+import com.example.pokemon.models.species.Species
 import com.example.pokemon.models.pokemons.PokemonResponse
 import retrofit2.Call
 import retrofit2.http.*
@@ -22,4 +23,7 @@ interface APIService {
 
     @GET("pokemon-species/{id}/")
     fun getSpecies(@Path("id") id:String): Call<Species>
+
+    @GET("evolution-chain/{id}/")
+    fun getEvolution(@Path("id") id:String): Call<Evolution>
 }

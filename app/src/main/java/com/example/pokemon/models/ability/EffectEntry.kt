@@ -1,4 +1,4 @@
-package com.example.pokemon.models.Ability
+package com.example.pokemon.models.ability
 
 import com.google.gson.annotations.Expose
 

@@ -35,9 +35,7 @@ class MoveAdapter (var mContext: Context) : RecyclerView.Adapter<MoveAdapter.Vie
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.imgTypePokemon.setImageResource(list[position].typeOfPokemon)
-        holder.name.text = list[position].nameOfMove
-        holder.level.text = list[position].levelLearn
+
     }
 
 }
