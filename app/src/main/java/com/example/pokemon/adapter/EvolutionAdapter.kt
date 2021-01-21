@@ -28,6 +28,11 @@ class EvolutionAdapter(var mContext: Context) : RecyclerView.Adapter<EvolutionAd
         this.mList = list
         notifyDataSetChanged()
     }
+
+    fun clear(){
+        mList.clear()
+        notifyDataSetChanged()
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val homeView: View = layoutInflater.inflate(R.layout.item_evolution, parent, false)
@@ -37,7 +42,7 @@ class EvolutionAdapter(var mContext: Context) : RecyclerView.Adapter<EvolutionAd
 
     override fun getItemCount(): Int {
         return if( mList.size - 1 > 0){
-            mList.size -1
+            mList.size - 1
         } else mList.size
     }
 

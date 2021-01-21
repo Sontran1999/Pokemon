@@ -29,27 +29,30 @@ object Utis {
         }
         return item.substring(count + 1, n + 1)
     }
-    val POKEMON_TYPE = mapOf<String, Int>(
-        "BUG" to R.drawable.ic_bug,
-        "DARK" to R.drawable.ic_dark,
-        "DRAGON" to R.drawable.ic_dragon,
-        "ELECTRIC" to R.drawable.ic_electric,
-        "FAIRY" to R.drawable.ic_fairy,
-        "FIGHT" to R.drawable.ic_fight,
-        "FIGHTING" to R.drawable.ic_fight,
-        "FIRE" to R.drawable.ic_fire,
-        "FLYING" to R.drawable.ic_flying,
-        "GHOST" to R.drawable.ic_ghost,
-        "GRASS" to R.drawable.ic_grass,
-        "GROUND" to R.drawable.ic_ground,
-        "ICE" to R.drawable.ic_ice,
-        "NORMAL" to R.drawable.ic_normal,
-        "POISON" to R.drawable.ic_poison,
-        "PSYCHIC" to R.drawable.ic_psychic,
-        "ROCK" to R.drawable.ic_rock,
-        "STEEL" to R.drawable.ic_steel,
-        "WATER" to R.drawable.ic_water
-    )
+    fun typePokemon(type: String):Int {
+        return when (type) {
+            "bug" -> R.drawable.ic_bug
+            "dark" -> R.drawable.ic_dark
+            "dragon" -> R.drawable.ic_dragon
+            "electric" -> R.drawable.ic_electric
+            "fairy" -> R.drawable.ic_fairy
+            "fight" -> R.drawable.ic_fight
+            "fighting" -> R.drawable.ic_fight
+            "fire" -> R.drawable.ic_fire
+            "flying" -> R.drawable.ic_flying
+            "ghost" -> R.drawable.ic_ghost
+            "grass" -> R.drawable.ic_grass
+            "ground" -> R.drawable.ic_ground
+            "ice" -> R.drawable.ic_ice
+            "normal" -> R.drawable.ic_normal
+            "poison" -> R.drawable.ic_poison
+            "psychic" -> R.drawable.ic_psychic
+            "rock" -> R.drawable.ic_rock
+            "steel" -> R.drawable.ic_steel
+            "water" -> R.drawable.ic_water
+            else -> R.drawable.ic_bug
+        }
+    }
 
     fun typeLG(type: String):Int {
         return when (type) {

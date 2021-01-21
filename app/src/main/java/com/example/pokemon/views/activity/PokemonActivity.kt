@@ -48,8 +48,13 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLay
         replaceData()
         loadFeed()
 //        initObserve()
-        addsScrollListener()
+//        addsScrollListener()
 
+    }
+
+    private fun registerObserve(){
+        replaceData()
+        load()
     }
 
     private fun replaceData() {
@@ -61,6 +66,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLay
         }
     }
 
+
     private fun load() {
         viewModelAPI.pokemons.observe(this) {
             if (it != null) {
@@ -70,7 +76,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLay
                 Toast.makeText(this, "error loading from API", Toast.LENGTH_SHORT).show()
             }
         }
-        viewModelAPI.getAllPokemon(0)
+//        viewModelAPI.getAllPokemon(0)
     }
 
     private fun loadFeed() {
@@ -85,7 +91,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLay
         mDialog?.show()
         if (Utis.amIConnected(this)) {
             adapter.reset()
-            load()
+            viewModelAPI.getAllPokemon(0)
         } else {
             Toast.makeText(this, "Thiết bị chưa kết nối internet", Toast.LENGTH_SHORT).show()
             mDialog?.dismiss()
@@ -103,21 +109,11 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLay
         )
     }
 
-//    private fun initObserve() {
-//        viewModelAPI.pokemons.observe(this) {
-//            it?.let { pokemon ->
-//                list = pokemon as ArrayList<Pokemon>
-//                adapter.updatePokemonList(pokemon)
-//            }
-//        }
-//        viewModelAPI.getAllPokemon(0)
-//    }
-
     private fun loadMore() {
         viewModelAPI.pokemons.observe(this) {
-            adapter.setList3(list)
+            adapter.removePokemon(list)
             if (it != null) {
-                adapter.setList4(it as MutableList<Pokemon>)
+                adapter.addPokemon(it as MutableList<Pokemon>)
                 notLoading = true
             }
         }
@@ -128,7 +124,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLay
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (notLoading && layoutManager.findLastCompletelyVisibleItemPosition() == list.size - 1) {
-                    adapter.setList1(list)
+                    adapter.setListPokemon(list)
                     notLoading = false
                     loadMore()
                 }
@@ -176,12 +172,11 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLay
         bundle.putSerializable("object", it)
         val intent: Intent = Intent(this@PokemonActivity, DetailActivity::class.java)
         intent.putExtra("data", bundle)
-//        startActivityForResult(intent, Utis.LAUNCH_SECOND_ACTIVITY)
         startActivity(intent)
     }
 
     override fun onRefresh() {
-        loadFeed()
+        load()
         Toast.makeText(this, list.size.toString(),Toast.LENGTH_SHORT).show()
         srl.isRefreshing = false
     }

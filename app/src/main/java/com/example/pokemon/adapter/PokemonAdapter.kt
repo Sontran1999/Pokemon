@@ -10,13 +10,18 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pokemon.R
 import com.example.pokemon.common.Utis
 import com.example.pokemon.models.detailpokemon.DetailPokemon
+import com.example.pokemon.models.detailpokemon.Moves
+import com.example.pokemon.models.detailpokemon.Types
 import com.example.pokemon.models.pokemons.Pokemon
 import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.fragment_moves.*
 
 
 class PokemonAdapter(
@@ -36,6 +41,7 @@ class PokemonAdapter(
         var namePokemon: TextView = itemView.findViewById(R.id.tvName)
         var idPokemon: TextView = itemView.findViewById(R.id.tvId)
         var constrain: ConstraintLayout = itemView.findViewById(R.id.constrainLayout)
+        var recyclerView: RecyclerView = itemView.findViewById(R.id.rv_Type)
 
         fun bindData(data: Pokemon) {
             namePokemon.text = data.name?.let { Utis.toUpperCase(it) }
@@ -44,14 +50,19 @@ class PokemonAdapter(
                 .load("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/" + data.id.toString() + ".png")
                 .placeholder(R.drawable.pokemon_placeholder)
                 .into(imagePokemon)
+//            recyclerView.setHasFixedSize(true)
+//            recyclerView.layoutManager = LinearLayoutManager(itemView.context, LinearLayoutManager.HORIZONTAL, false)
+//            var adapter: TypeAdapter = TypeAdapter()
+//            recyclerView.adapter = adapter
+//            adapter.setList(data.detailPokemon?.types as MutableList<Types>)
+
+        }
 //            data.detailPokemon?.let { _detail ->
 //                Picasso.with(imagePokemon.context)
 //                    .load(_detail.sprites.other.officialArtwork.front_default)
 //                    .placeholder(R.drawable.pokemon_placeholder)
 //                    .into(imagePokemon)
 //            }
-        }
-
 //        fun bindData2(mDetailPokemon: DetailPokemon) {
 //            namePokemon.text = mDetailPokemon.name
 //            idPokemon.text = mDetailPokemon.id.toString()
@@ -117,19 +128,19 @@ class PokemonAdapter(
             oldList[oldItemPosition].id == newList[newItemPosition].id
     }
 
-    fun setList1(list: MutableList<Pokemon>) {
+    fun setListPokemon(list: MutableList<Pokemon>) {
         this.mPokemon = list
         mPokemon.add(Pokemon("null"))
         notifyItemInserted(mPokemon.size - 1)
     }
 
-    fun setList3(list: MutableList<Pokemon>) {
+    fun removePokemon(list: MutableList<Pokemon>) {
         this.mPokemon = list
         this.mPokemon.removeAt(mPokemon.size - 1)
         notifyItemRemoved(mPokemon.size)
     }
 
-    fun setList4(list: MutableList<Pokemon>) {
+    fun addPokemon(list: MutableList<Pokemon>) {
         mPokemon.addAll(list)
         notifyDataSetChanged()
     }
@@ -139,5 +150,10 @@ class PokemonAdapter(
         notifyDataSetChanged()
     }
 
+    fun setPokemon(list: MutableList<Pokemon>){
+        this.mPokemon = list
+        mPokemon.clear()
+        notifyDataSetChanged()
+    }
 
 }

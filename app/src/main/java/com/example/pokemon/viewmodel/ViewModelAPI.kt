@@ -121,8 +121,6 @@ class ViewModelAPI : ViewModel() {
             var name = pokemon.name.toString()
             if (query.toUpperCase().equals(name.toUpperCase())) {
                 listSearch.add(pokemon)
-            } else if (query.toLowerCase().equals(name.toLowerCase())) {
-                listSearch.add(pokemon)
             }
         }
         pokemons.postValue(listSearch)

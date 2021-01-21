@@ -20,8 +20,10 @@ import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pokemon.R
 import com.example.pokemon.adapter.EvolutionAdapter
+import com.example.pokemon.adapter.MoveAdapter
 import com.example.pokemon.common.Utis
 import com.example.pokemon.models.detailpokemon.DetailPokemon
+import com.example.pokemon.models.detailpokemon.Moves
 import com.example.pokemon.models.evolution.Evolution
 import com.example.pokemon.models.evolution.EvolutionPokemon
 import com.example.pokemon.models.species.Species
@@ -33,6 +35,7 @@ import com.example.pokemontest.StatsFragment
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_detail.*
 import kotlinx.android.synthetic.main.fragment_evolutions.*
+import kotlinx.android.synthetic.main.fragment_moves.*
 import kotlinx.android.synthetic.main.fragment_stats.*
 import java.io.Serializable
 
@@ -123,7 +126,6 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, Serializable {
             )
         )
 
-
     }
 
     private fun bindTypePokemonLgSrc(imv: ImageView, type: String) {
@@ -138,6 +140,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, Serializable {
             if (it != null) {
                 detailPokemon = it
                 init()
+                showViewMove()
             }
         }
         pokemon?.name?.let { viewModelAPI.getDetailPokemon(it) }
@@ -148,8 +151,8 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, Serializable {
             if (it != null) {
                 species = it
                 var count = 0
-                var n = species?.evolutionChain?.url?.length?.minus(2)
-                var item = species?.evolutionChain?.url
+                var n = species.evolutionChain?.url?.length?.minus(2)
+                var item = species.evolutionChain?.url
                 if (n != null) {
                     for (i in n downTo 0) {
                         if (item!![i] == '/') {
@@ -173,41 +176,53 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, Serializable {
                     it.chain?.evolvesTo?.get(0)?.species?.url?.let { it1 ->
                         Utis.cutId(it1)
                     }
-                getPicEvolution(idVersionOne)
-                if (idVersionTwo != null) {
-                    getPicEvolution(idVersionTwo)
-                }
                 var idVersionThree: String? =
                     it.chain?.evolvesTo?.get(0)?.evolvesTo?.get(0)?.species?.url?.let { it1 ->
                         Utis.cutId(
                             it1
                         )
                     }
-                getPicEvolution(idVersionThree)
-                showView()
+                getPicEvolution()
+                if (idVersionThree != null) {
+                    viewModelAPI.getVersionPokemon(idVersionThree)
+                }
+                if (idVersionTwo != null) {
+                    viewModelAPI.getVersionPokemon(idVersionTwo)
+                }
+                if (idVersionOne != null) {
+                    viewModelAPI.getVersionPokemon(idVersionOne)
+                }
+                showViewEvolution()
             }
         }
         viewModelAPI.getEvolution(id)
     }
 
-    private fun getPicEvolution(id: String?) {
+    private fun getPicEvolution() {
         viewModelAPI.versionPokemon.observe(this) {
             if (it != null) {
                 listDetailPokemon.add(it)
             }
         }
-        if (id != null) {
-            viewModelAPI.getVersionPokemon(id)
-        }
-
     }
 
-    private fun showView() {
+    private fun showViewEvolution() {
         rv_Evolution.setHasFixedSize(true)
         rv_Evolution.layoutManager = LinearLayoutManager(this)
         var adapter: EvolutionAdapter = EvolutionAdapter(this)
-        adapter.setList(listDetailPokemon)
         rv_Evolution.adapter = adapter
+        adapter.clear()
+        adapter.setList(listDetailPokemon)
+
+    }
+
+    private fun showViewMove() {
+        rv_Moves.setHasFixedSize(true)
+        rv_Moves.layoutManager = LinearLayoutManager(this)
+        var adapter: MoveAdapter = MoveAdapter(this)
+        rv_Moves.adapter = adapter
+        adapter.setList(detailPokemon?.moves as ArrayList<Moves>)
+
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)

@@ -22,7 +22,6 @@ import com.example.pokemon.viewmodel.ViewModelAPI
 import kotlinx.android.synthetic.main.fragment_evolutions.*
 
 class EvolutionsFragment : Fragment() {
-    private lateinit var viewModelAPI: ViewModelAPI
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
