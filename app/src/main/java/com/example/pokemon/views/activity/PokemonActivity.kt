@@ -165,12 +165,21 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
     }
 
     private fun registerSearchPokemon(){
-        viewModelAPI.searchPokemon.observe(this){
-            if(it != null){
+        viewModelAPI.searchPokemon.observe(this) {
+            if (it.size != 0) {
                 adapter.updatePokemonList(it)
                 edtSearch.text.clear()
                 keySearch = false
                 keyDisplay = false
+            } else {
+                AlertDialog.Builder(this).setTitle("No information")
+                    .setMessage("The information you are looking for is not available")
+                    .setNegativeButton(
+                        "OK ",
+                        DialogInterface.OnClickListener { dialogInterface, i ->
+                            dialogInterface.cancel()
+                        }).show()
+                edtSearch.text.clear()
             }
         }
     }
