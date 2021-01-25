@@ -16,7 +16,8 @@ import com.example.pokemon.models.evolution.Evolution
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_detail.*
 
-class EvolutionAdapter(var mContext: Context) : RecyclerView.Adapter<EvolutionAdapter.ViewHolder>() {
+class EvolutionAdapter(var mContext: Context) :
+    RecyclerView.Adapter<EvolutionAdapter.ViewHolder>() {
 
     private var mList: MutableList<DetailPokemon> = arrayListOf()
     private var mListLevel: MutableList<String> = arrayListOf()
@@ -28,16 +29,18 @@ class EvolutionAdapter(var mContext: Context) : RecyclerView.Adapter<EvolutionAd
         val nameBefore: TextView = itemView.findViewById(R.id.tv_NameOfPokemonBefore)
         val level: TextView = itemView.findViewById(R.id.tv_level)
     }
-    fun  setList(list : MutableList<DetailPokemon>, listLevel: MutableList<String>){
+
+    fun setList(list: MutableList<DetailPokemon>, listLevel: MutableList<String>) {
         this.mList = list
         this.mListLevel = listLevel
         notifyDataSetChanged()
     }
 
-    fun clear(){
+    fun clear() {
         mList.clear()
         notifyDataSetChanged()
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val homeView: View = layoutInflater.inflate(R.layout.item_evolution, parent, false)
@@ -46,7 +49,7 @@ class EvolutionAdapter(var mContext: Context) : RecyclerView.Adapter<EvolutionAd
     }
 
     override fun getItemCount(): Int {
-        return if( mList.size > 1){
+        return if (mList.size > 1) {
             mList.size - 1
         } else mList.size
     }
@@ -56,7 +59,12 @@ class EvolutionAdapter(var mContext: Context) : RecyclerView.Adapter<EvolutionAd
             .load(mList[position].sprites?.other?.officialArtwork?.frontDefault)
             .into(holder.avtBefore)
         holder.nameBefore.text = mList[position].name
-        holder.level.text = "Lv. " + mListLevel[position]
+        if (mListLevel.size != 0) {
+            holder.level.text = "Lv. " + mListLevel[position]
+        } else {
+            holder.level.text = "Lv. updating"
+        }
+
         holder.level.setTextColor(
             mList[position].types?.get(0)?.type?.name?.let { Utis.typeColor(it) }?.let {
                 ContextCompat.getColor(
@@ -69,13 +77,12 @@ class EvolutionAdapter(var mContext: Context) : RecyclerView.Adapter<EvolutionAd
                 )
             }
         )
-        if(mList.size > 1){
+        if (mList.size > 1) {
             Picasso.with(mContext)
-                .load(mList[position+1].sprites?.other?.officialArtwork?.frontDefault)
+                .load(mList[position + 1].sprites?.other?.officialArtwork?.frontDefault)
                 .into(holder.avtAfter)
-            holder.nameAfter.text = mList[position+1].name
-        }
-        else{
+            holder.nameAfter.text = mList[position + 1].name
+        } else {
             Picasso.with(mContext)
                 .load(mList[position].sprites?.other?.officialArtwork?.frontDefault)
                 .into(holder.avtAfter)

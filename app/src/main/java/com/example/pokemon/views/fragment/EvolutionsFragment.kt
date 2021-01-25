@@ -39,6 +39,7 @@ class EvolutionsFragment(var detailPokemon: DetailPokemon) : Fragment() {
         registerDetail()
         registerGetVersionPokemon()
         registerGetEvolution(view)
+        viewModelAPI.getSpecies(detailPokemon.id.toString())
         return view
     }
 
@@ -108,7 +109,6 @@ class EvolutionsFragment(var detailPokemon: DetailPokemon) : Fragment() {
                 }
             }
         }
-        viewModelAPI.getSpecies(detailPokemon.id.toString())
     }
 
 }
