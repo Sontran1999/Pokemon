@@ -24,6 +24,7 @@ class ViewModelAPI : ViewModel() {
     var evoultion: MutableLiveData<Evolution> = MutableLiveData()
     var idPokemon: MutableLiveData<String> = MutableLiveData()
     var listIdPokemon: MutableLiveData<MutableList<String>> = MutableLiveData()
+    var searchPokemon: MutableLiveData<MutableList<DetailPokemon>> = MutableLiveData()
 
     fun getAllPokemon(listSize: Int) {
         apiService.getPokemon(listSize, 20)
@@ -124,5 +125,16 @@ class ViewModelAPI : ViewModel() {
 
     fun setListIdPokemon(listId: MutableList<String>){
         listIdPokemon.postValue(listId)
+    }
+
+    fun searchPokemon(query: String, list: MutableList<DetailPokemon>) {
+        var listSearch: MutableList<DetailPokemon> = mutableListOf()
+        list?.forEachIndexed { index, pokemon ->
+            var name = pokemon.name.toString()
+            if (query.toUpperCase().equals(name.toUpperCase())) {
+                listSearch.add(pokemon)
+            }
+            searchPokemon.postValue(listSearch)
+        }
     }
 }

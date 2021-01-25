@@ -59,7 +59,7 @@ class EvolutionAdapter(var mContext: Context) :
             .load(mList[position].sprites?.other?.officialArtwork?.frontDefault)
             .into(holder.avtBefore)
         holder.nameBefore.text = mList[position].name
-        if (mListLevel.size != 0) {
+        if (mListLevel.size != 0 && mListLevel[position] != "null") {
             holder.level.text = "Lv. " + mListLevel[position]
         } else {
             holder.level.text = "Lv. updating"

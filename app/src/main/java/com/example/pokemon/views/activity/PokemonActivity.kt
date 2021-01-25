@@ -60,6 +60,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
 
     private fun registerObserve() {
         replaceData()
+        registerSearchPokemon()
     }
 
     private fun replaceData() {
@@ -163,6 +164,16 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
         })
     }
 
+    private fun registerSearchPokemon(){
+        viewModelAPI.searchPokemon.observe(this){
+            if(it != null){
+                adapter.updatePokemonList(it)
+                edtSearch.text.clear()
+                keySearch = false
+                keyDisplay = false
+            }
+        }
+    }
     override fun onKey(v: View?, keyCode: Int, event: KeyEvent?): Boolean {
         var query: String = edtSearch.text.toString()
         when (v?.id) {
@@ -172,7 +183,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
                 ) {
                     if (query != "") {
                         keySearch = true
-                        viewModelAPI.getDetailPokemon(edtSearch.text.toString())
+                        viewModelAPI.searchPokemon(edtSearch.text.toString(), list)
                     } else {
                         Toast.makeText(
                             this,
