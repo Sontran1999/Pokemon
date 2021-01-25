@@ -1,9 +1,15 @@
 package com.example.pokemon.models.detailpokemon
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
-data class Version (
 
-	@SerializedName("name") val name : String,
-	@SerializedName("url") val url : String
-)
+class Version {
+	@SerializedName("name")
+	@Expose
+	var name: String? = null
+
+	@SerializedName("url")
+	@Expose
+	var url: String? = null
+}

@@ -4,6 +4,7 @@ import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
@@ -19,25 +20,29 @@ import com.example.pokemon.adapter.PokemonAdapter
 import com.example.pokemon.common.Utis
 import com.example.pokemon.models.detailpokemon.DetailPokemon
 import com.example.pokemon.models.pokemons.Pokemon
+import com.example.pokemon.models.pokemons.PokemonResponse
 import com.example.pokemon.viewmodel.ViewModelAPI
 import kotlinx.android.synthetic.main.activity_pokemon.*
 
 
-class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLayout.OnRefreshListener {
+class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
+    SwipeRefreshLayout.OnRefreshListener {
     lateinit var adapter: PokemonAdapter
     lateinit var layoutManager: LinearLayoutManager
     lateinit var viewModelAPI: ViewModelAPI
-    var notLoading = true
-    private var list: MutableList<Pokemon> = mutableListOf()
-    var mDialog: ProgressDialog? = null
+    var keySearch = false
+    lateinit var listPokemon: PokemonResponse
+    var list: MutableList<DetailPokemon> = arrayListOf()
+    private var mDialog: ProgressDialog? = null
+    var count: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pokemon)
 
-
         viewModelAPI = ViewModelAPI()
-        adapter = PokemonAdapter(this,onItemClick)
+        adapter = PokemonAdapter(this, onItemClick)
+        listPokemon = PokemonResponse()
         layoutManager = LinearLayoutManager(this)
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
@@ -45,39 +50,76 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLay
         edtSearch.setOnKeyListener(this)
         srl.setOnRefreshListener(this)
         setActionBar()
-        replaceData()
+        registerObserve()
         loadFeed()
-//        initObserve()
-//        addsScrollListener()
+        addsScrollListener()
 
     }
 
-    private fun registerObserve(){
+    private fun registerObserve() {
         replaceData()
-        load()
+        viewModelAPI.getAllPokemon(list.size)
     }
 
     private fun replaceData() {
-        viewModelAPI.pokemons.observe(this) {
-            if(it != null ){
-                list = it as MutableList<Pokemon>
-                adapter.updatePokemonList(it)
-            }
-        }
-    }
 
-
-    private fun load() {
         viewModelAPI.pokemons.observe(this) {
             if (it != null) {
-                mDialog?.dismiss()
+                listPokemon = it
+                viewModelAPI.setIdPokemon(count.toString())
             } else {
                 mDialog?.dismiss()
                 Toast.makeText(this, "error loading from API", Toast.LENGTH_SHORT).show()
             }
         }
-//        viewModelAPI.getAllPokemon(0)
+
+        viewModelAPI.idPokemon.observe(this) {
+            if (it != null) {
+                if (list.size == 0) {
+                    count = 0
+                }
+                if (count < listPokemon.results?.size ?: 0) {
+                    var id = listPokemon.results?.get(count)?.name
+                    if (id != null) {
+//                        viewModelAPI.setIdPokemon(id)
+                        viewModelAPI.getDetailPokemon(id)
+                    }
+                } else {
+                    mDialog?.dismiss()
+                    adapter.updatePokemonList(list)
+                }
+
+            }
+        }
+
+        viewModelAPI.detailPokemon.observe(this) {
+            if (keySearch) {
+                if (it == null) {
+                    AlertDialog.Builder(this).setTitle("No information")
+                        .setMessage("The information you are looking for is not available")
+                        .setNegativeButton(
+                            "OK ",
+                            DialogInterface.OnClickListener { dialogInterface, i ->
+                                dialogInterface.cancel()
+                            }).show()
+                    edtSearch.text.clear()
+                } else {
+                    list.clear()
+                    list.add(it)
+                    adapter.updatePokemonList(list)
+                    keySearch = false
+                    edtSearch.text.clear()
+                }
+            } else if (it != null && !keySearch) {
+                list.add(it)
+                count++
+//                viewModelAPI.getAllPokemon(0)
+                viewModelAPI.setIdPokemon(count.toString())
+            }
+        }
+
     }
+
 
     private fun loadFeed() {
         mDialog = ProgressDialog(this)
@@ -109,24 +151,14 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLay
         )
     }
 
-    private fun loadMore() {
-        viewModelAPI.pokemons.observe(this) {
-            adapter.removePokemon(list)
-            if (it != null) {
-                adapter.addPokemon(it as MutableList<Pokemon>)
-                notLoading = true
-            }
-        }
-        viewModelAPI.getAllPokemon(list.size - 1)
-    }
-
     private fun addsScrollListener() {
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (notLoading && layoutManager.findLastCompletelyVisibleItemPosition() == list.size - 1) {
-                    adapter.setListPokemon(list)
-                    notLoading = false
-                    loadMore()
+                if (!adapter.isLoading && !recyclerView.canScrollVertically(1)) {
+                    count = 0
+                    viewModelAPI.getAllPokemon(list.size)
+                    adapter.setLoadMoreItem(true)
+                    Log.d("loadmore","poke")
                 }
             }
         })
@@ -137,13 +169,20 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLay
         when (v?.id) {
             R.id.edtSearch -> {
                 if ((event?.action == KeyEvent.ACTION_DOWN) &&
-                    (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                        if(query != ""){
-                            searchPokemon(edtSearch.text.toString())
-                            Toast.makeText(this, edtSearch.text.toString(),Toast.LENGTH_SHORT).show()
-                        }else {
-                            Toast.makeText(this, "rỗng",Toast.LENGTH_SHORT).show()
-                        }
+                    (keyCode == KeyEvent.KEYCODE_ENTER)
+                ) {
+                    if (query != "") {
+                        keySearch = true
+                        viewModelAPI.getDetailPokemon(edtSearch.text.toString())
+                        Toast.makeText(this, edtSearch.text.toString(), Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(
+                            this,
+                            "Please type name or id of Pokemon!",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
                     return true
                 }
                 return false
@@ -152,32 +191,18 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener, SwipeRefreshLay
         }
     }
 
-    private fun searchPokemon(namePokemon: String){
-        viewModelAPI.pokemons.observe(this) {
-            if (it?.size == 0) {
-                AlertDialog.Builder(this).setTitle("No information")
-                    .setMessage("The information you are looking for is not available")
-                    .setNegativeButton(
-                        "OK ",
-                        DialogInterface.OnClickListener { dialogInterface, i ->
-                            dialogInterface.cancel()
-                        }).show()
-            }
-        }
-        viewModelAPI.searchPokemon(namePokemon,list)
-    }
-
-    private val onItemClick: (Pokemon) -> Unit = {
+    private val onItemClick: (DetailPokemon) -> Unit = {
         var bundle: Bundle = Bundle()
         bundle.putSerializable("object", it)
-        val intent: Intent = Intent(this@PokemonActivity, DetailActivity::class.java)
+        val intent: Intent = Intent(this, DetailActivity::class.java)
         intent.putExtra("data", bundle)
         startActivity(intent)
+
     }
 
     override fun onRefresh() {
-        load()
-        Toast.makeText(this, list.size.toString(),Toast.LENGTH_SHORT).show()
+        list.clear()
+        loadFeed()
         srl.isRefreshing = false
     }
 

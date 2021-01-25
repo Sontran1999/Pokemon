@@ -9,13 +9,13 @@ import retrofit2.Call
 import retrofit2.http.*
 
 interface APIService {
-    @GET("pokemon/")
+    @GET("pokemon")
     fun getPokemon(
         @Query("offset") offset: Int,
         @Query("limit") limit: Int
         ): Call<PokemonResponse>
 
-    @GET("pokemon/{id}/")
+    @GET("pokemon/{id}")
     fun getDetailPokemon(@Path("id") id: String): Call<DetailPokemon>
 
     @GET("ability/{id}/")

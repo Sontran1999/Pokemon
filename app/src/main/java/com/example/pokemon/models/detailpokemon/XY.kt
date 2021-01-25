@@ -1,12 +1,23 @@
 package com.example.pokemon.models.detailpokemon
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 
-data class XY (
+class XY {
+	@SerializedName("front_default")
+	@Expose
+	var frontDefault: String? = null
 
-	@SerializedName("front_default") val front_default : String,
-	@SerializedName("front_female") val front_female : String,
-	@SerializedName("front_shiny") val front_shiny : String,
-	@SerializedName("front_shiny_female") val front_shiny_female : String
-)
+	@SerializedName("front_female")
+	@Expose
+	var frontFemale: String? = null
+
+	@SerializedName("front_shiny")
+	@Expose
+	var frontShiny: String? = null
+
+	@SerializedName("front_shiny_female")
+	@Expose
+	var frontShinyFemale: String? = null
+}

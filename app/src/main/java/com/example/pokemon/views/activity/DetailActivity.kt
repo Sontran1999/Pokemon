@@ -14,6 +14,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.observe
@@ -23,6 +24,7 @@ import com.example.pokemon.adapter.EvolutionAdapter
 import com.example.pokemon.adapter.MoveAdapter
 import com.example.pokemon.common.Utis
 import com.example.pokemon.models.detailpokemon.DetailPokemon
+import com.example.pokemon.models.detailpokemon.Move
 import com.example.pokemon.models.detailpokemon.Moves
 import com.example.pokemon.models.evolution.Evolution
 import com.example.pokemon.models.evolution.EvolutionPokemon
@@ -40,38 +42,26 @@ import kotlinx.android.synthetic.main.fragment_stats.*
 import java.io.Serializable
 
 class DetailActivity : AppCompatActivity(), View.OnClickListener, Serializable {
-    private val listFragment = arrayListOf(StatsFragment(), EvolutionsFragment(), MovesFragment())
+    private val listFragment = arrayListOf<Fragment>()
     private val fragmentManager: FragmentManager = supportFragmentManager
     private val fragmentTransaction = fragmentManager.beginTransaction()
     private var count = 0
-    var pokemon: Pokemon? = null
-    private var detailPokemon: DetailPokemon? = null
+    private lateinit var detailPokemon: DetailPokemon
     lateinit var viewModelAPI: ViewModelAPI
-    private lateinit var species: Species
-    var bundle: Bundle? = null
-    lateinit var evolution: Evolution
-    var listDetailPokemon: MutableList<DetailPokemon> = arrayListOf()
-    var listIdVersion: MutableList<String> = arrayListOf()
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
-        var bundle = intent.getBundleExtra("data")
-        pokemon = bundle?.getSerializable("object") as Pokemon
         viewModelAPI = ViewModelAPI()
 
-        getDetail()
-        setActionBar()
-        getVersionPokemon()
-
-        listFragment.forEachIndexed { _, fragment ->
-            fragmentTransaction.add(R.id.fm_content, fragment)
-            fragmentTransaction.hide(fragment)
+        val bundle = intent.getBundleExtra("data")
+        if (bundle != null) {
+            detailPokemon = bundle.getSerializable("object") as DetailPokemon
         }
-        fragmentTransaction.show(listFragment[0])
-        fragmentTransaction.commit()
+
+        setActionBar()
+        registerObserve()
     }
 
     private fun setActionBar() {
@@ -85,43 +75,39 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, Serializable {
         )
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private fun initFragment() {
+        listFragment.add(StatsFragment(detailPokemon))
+        listFragment.add(EvolutionsFragment(detailPokemon))
+        listFragment.add(MovesFragment(detailPokemon))
+
+        listFragment.forEachIndexed { _, fragment ->
+            fragmentTransaction.add(R.id.fm_content, fragment)
+            fragmentTransaction.hide(fragment)
+        }
+        fragmentTransaction.show(listFragment[0])
+        fragmentTransaction.commit()
+    }
+
     private fun init() {
+
         tv_nameOfPokemon.visibility = View.INVISIBLE
         btn_HideOrShowDetail.setOnClickListener(this)
         cv_Moves.setOnClickListener(this)
         cv_Evolutions.setOnClickListener(this)
         cv_Stats.setOnClickListener(this)
-        Picasso.with(this)
-            .load(detailPokemon?.sprites?.other?.officialArtwork?.front_default)
-            .into(img_avatar)
-        tv_Name.text = detailPokemon?.name?.let { Utis.toUpperCase(it) }
-        Picasso.with(this)
-            .load(detailPokemon?.sprites?.other?.officialArtwork?.front_default)
-            .into(img_normal)
-        Picasso.with(this)
-            .load(detailPokemon?.sprites?.other?.officialArtwork?.front_default)
-            .into(img_shiny)
 
-        tv_numberOfHP.text = detailPokemon?.stats?.get(0)?.base_stat.toString()
-        tv_numberOfATK.text = detailPokemon?.stats?.get(1)?.base_stat.toString()
-        tv_numberOfDEF.text = detailPokemon?.stats?.get(2)?.base_stat.toString()
-        tv_numberOfSATK.text = detailPokemon?.stats?.get(3)?.base_stat.toString()
-        tv_numberOfSDEF.text = detailPokemon?.stats?.get(4)?.base_stat.toString()
-        tv_numberOfSPD.text = detailPokemon?.stats?.get(5)?.base_stat.toString()
-
-        pb_HP.progress = detailPokemon?.stats?.get(0)?.base_stat!!
-        pb_ATK.progress = detailPokemon?.stats?.get(1)?.base_stat!!
-        pb_DEF.progress = detailPokemon?.stats?.get(2)?.base_stat!!
-        pb_SATK.progress = detailPokemon?.stats?.get(3)?.base_stat!!
-        pb_SDEF.progress = detailPokemon?.stats?.get(4)?.base_stat!!
-        pb_spd.progress = detailPokemon?.stats?.get(5)?.base_stat!!
+        if (detailPokemon.sprites?.other?.officialArtwork?.frontDefault != null) {
+            Picasso.with(this)
+                .load(detailPokemon.sprites?.other?.officialArtwork?.frontDefault)
+                .into(img_avatar)
+            tv_Name.text = detailPokemon.name?.let { Utis.toUpperCase(it) }
+        }
 
         setColor(
             ColorStateList.valueOf(
                 ContextCompat.getColor(
                     this,
-                    Utis.typeColor(detailPokemon?.types?.get(0)?.type?.name.toString())
+                    Utis.typeColor(detailPokemon.types?.get(0)?.type?.name.toString())
                 )
             )
         )
@@ -134,115 +120,22 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, Serializable {
             .into(imv)
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private fun registerObserve() {
+        getDetail()
+    }
+
     private fun getDetail() {
         viewModelAPI.detailPokemon.observe(this) {
             if (it != null) {
                 detailPokemon = it
+                initFragment()
                 init()
-                showViewMove()
             }
         }
-        pokemon?.name?.let { viewModelAPI.getDetailPokemon(it) }
+        viewModelAPI.getDetailPokemon(detailPokemon.id.toString())
     }
 
-    private fun getVersionPokemon() {
-        viewModelAPI.species.observe(this) {
-            if (it != null) {
-                species = it
-                var count = 0
-                var n = species.evolutionChain?.url?.length?.minus(2)
-                var item = species.evolutionChain?.url
-                if (n != null) {
-                    for (i in n downTo 0) {
-                        if (item!![i] == '/') {
-                            count = i
-                            break
-                        }
-                    }
-                    item?.substring(count + 1, n + 1)?.let { getEvolution(it) }
-                }
-            }
-        }
-        viewModelAPI.getSpecies(pokemon?.id.toString())
-    }
-
-    private fun getEvolution(id: String) {
-        viewModelAPI.evoultion.observe(this) {
-            if (it != null) {
-                evolution = it
-                var idVersionOne: String? = it.chain?.species?.url?.let { it1 -> Utis.cutId(it1) }
-                var idVersionTwo: String? =
-                    it.chain?.evolvesTo?.get(0)?.species?.url?.let { it1 ->
-                        Utis.cutId(it1)
-                    }
-                var idVersionThree: String? =
-                    it.chain?.evolvesTo?.get(0)?.evolvesTo?.get(0)?.species?.url?.let { it1 ->
-                        Utis.cutId(
-                            it1
-                        )
-                    }
-                getPicEvolution()
-                if (idVersionThree != null) {
-                    viewModelAPI.getVersionPokemon(idVersionThree)
-                }
-                if (idVersionTwo != null) {
-                    viewModelAPI.getVersionPokemon(idVersionTwo)
-                }
-                if (idVersionOne != null) {
-                    viewModelAPI.getVersionPokemon(idVersionOne)
-                }
-                showViewEvolution()
-            }
-        }
-        viewModelAPI.getEvolution(id)
-    }
-
-    private fun getPicEvolution() {
-        viewModelAPI.versionPokemon.observe(this) {
-            if (it != null) {
-                listDetailPokemon.add(it)
-            }
-        }
-    }
-
-    private fun showViewEvolution() {
-        rv_Evolution.setHasFixedSize(true)
-        rv_Evolution.layoutManager = LinearLayoutManager(this)
-        var adapter: EvolutionAdapter = EvolutionAdapter(this)
-        rv_Evolution.adapter = adapter
-        adapter.clear()
-        adapter.setList(listDetailPokemon)
-
-    }
-
-    private fun showViewMove() {
-        rv_Moves.setHasFixedSize(true)
-        rv_Moves.layoutManager = LinearLayoutManager(this)
-        var adapter: MoveAdapter = MoveAdapter(this)
-        rv_Moves.adapter = adapter
-        adapter.setList(detailPokemon?.moves as ArrayList<Moves>)
-
-    }
-
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun setColor(color: ColorStateList) {
-        tv_Weaknesses.setTextColor(color)
-        tv_Abilities.setTextColor(color)
-        tv_torrent.setTextColor(color)
-        tv_rainDish.setTextColor(color)
-        tv_breeding.setTextColor(color)
-        tv_EggGroup.setTextColor(color)
-        tv_HatchTime.setTextColor(color)
-        tv_Gender.setTextColor(color)
-        tv_Capture.setTextColor(color)
-        tv_Habitat.setTextColor(color)
-        tv_Generation.setTextColor(color)
-        tv_CaptureRate.setTextColor(color)
-        tv_sprites.setTextColor(color)
-        tv_normal.setTextColor(color)
-        tv_Shiny.setTextColor(color)
-
         ctl_View.setBackgroundResource(Utis.typeColor(detailPokemon?.types?.get(0)?.type?.name.toString()))
 
         bindTypePokemonLgSrc(img_tag, detailPokemon?.types?.get(0)?.type?.name.toString())
@@ -250,12 +143,6 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, Serializable {
         cv_Stats.setCardBackgroundColor(color)
         tv_moves.setTextColor(color)
         tv_evolutions.setTextColor(color)
-        pb_HP.progressTintList = color
-        pb_ATK.progressTintList = color
-        pb_DEF.progressTintList = color
-        pb_SATK.progressTintList = color
-        pb_SDEF.progressTintList = color
-        pb_spd.progressTintList = color
     }
 
     override fun onClick(v: View?) {
@@ -326,7 +213,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, Serializable {
             ColorStateList.valueOf(
                 ContextCompat.getColor(
                     this,
-                    Utis.typeColor(detailPokemon?.types?.get(0)?.type?.name.toString())
+                    Utis.typeColor(detailPokemon.types?.get(0)?.type?.name.toString())
                 )
             )
         )
@@ -342,7 +229,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, Serializable {
             ColorStateList.valueOf(
                 ContextCompat.getColor(
                     this,
-                    Utis.typeColor(detailPokemon?.types?.get(0)?.type?.name.toString())
+                    Utis.typeColor(detailPokemon.types?.get(0)?.type?.name.toString())
                 )
             )
         )
@@ -359,7 +246,7 @@ class DetailActivity : AppCompatActivity(), View.OnClickListener, Serializable {
             ColorStateList.valueOf(
                 ContextCompat.getColor(
                     this,
-                    Utis.typeColor(detailPokemon?.types?.get(0)?.type?.name.toString())
+                    Utis.typeColor(detailPokemon.types?.get(0)?.type?.name.toString())
                 )
             )
         )

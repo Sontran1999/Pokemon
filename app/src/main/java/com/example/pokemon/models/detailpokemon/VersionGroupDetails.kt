@@ -1,11 +1,19 @@
 package com.example.pokemon.models.detailpokemon
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 
-data class VersionGroupDetails (
+class VersionGroupDetails {
+	@SerializedName("level_learned_at")
+	@Expose
+	var levelLearnedAt: Int? = null
 
-	@SerializedName("level_learned_at") val level_learned_at : Int,
-	@SerializedName("move_learn_method") val move_learn_method : MoveLearnMethod,
-	@SerializedName("version_group") val version_group : VersionGroup
-)
+	@SerializedName("move_learn_method")
+	@Expose
+	var moveLearnMethod: MoveLearnMethod? = null
+
+	@SerializedName("version_group")
+	@Expose
+	var versionGroup: VersionGroup? = null
+}

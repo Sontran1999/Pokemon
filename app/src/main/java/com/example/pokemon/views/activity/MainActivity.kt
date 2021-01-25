@@ -13,19 +13,19 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setActionBar()
         var handler = Handler()
-        handler.postDelayed(object : Runnable{
+        handler.postDelayed(object : Runnable {
             override fun run() {
                 var intent = Intent(this@MainActivity, PokemonActivity::class.java)
                 startActivity(intent)
                 finish()
-                overridePendingTransition(R.anim.anim_alpha_in,R.anim.anim_alpha_out)
+                overridePendingTransition(R.anim.anim_alpha_in, R.anim.anim_alpha_out)
 
             }
 
         }, 3000)
     }
 
-    fun setActionBar(){
+    fun setActionBar() {
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayShowTitleEnabled(false)
         supportActionBar?.setHomeButtonEnabled(true)

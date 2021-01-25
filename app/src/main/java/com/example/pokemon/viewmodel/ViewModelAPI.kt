@@ -18,14 +18,15 @@ import retrofit2.Response
 
 class ViewModelAPI : ViewModel() {
     private val apiService: APIService = ApiUtils().getAPIService()
-    var pokemons: MutableLiveData<List<Pokemon>?> = MutableLiveData()
-    var detailPokemon: MutableLiveData<DetailPokemon?> = MutableLiveData()
+    var pokemons: MutableLiveData<PokemonResponse> = MutableLiveData()
+    var detailPokemon: MutableLiveData<DetailPokemon> = MutableLiveData()
     var species: MutableLiveData<Species> = MutableLiveData()
     var evoultion: MutableLiveData<Evolution> = MutableLiveData()
-    var versionPokemon: MutableLiveData<DetailPokemon> = MutableLiveData()
+    var idPokemon: MutableLiveData<String> = MutableLiveData()
+    var listIdPokemon: MutableLiveData<MutableList<String>> = MutableLiveData()
 
     fun getAllPokemon(listSize: Int) {
-        apiService.getPokemon(listSize, 40)
+        apiService.getPokemon(listSize, 20)
             .enqueue(object : retrofit2.Callback<PokemonResponse> {
                 override fun onFailure(call: Call<PokemonResponse>, t: Throwable) {
                     Log.d("pokemon", "error loading from API getAll")
@@ -38,21 +39,7 @@ class ViewModelAPI : ViewModel() {
                 ) {
                     if (response.isSuccessful) {
                         Log.d("pokemon", "pokemon loaded from API")
-                        response.body()?.results?.let { _result ->
-
-                            _result.map { pokemon ->
-                                val pokemonId = "/\\d+/$".toRegex().find(pokemon.url ?: "")?.value
-
-                                pokemonId?.apply {
-                                    pokemon.id = substring(1, pokemonId.length - 1)
-                                    getDetailPokemon(pokemon.id.toString())
-                                }
-
-                                return@map pokemon
-                            }
-
-                            pokemons.postValue(_result)
-                        }
+                        pokemons.postValue(response.body())
                     } else {
                         Log.d("pokemon", response.message() + response.code())
                         pokemons.postValue(null)
@@ -66,7 +53,8 @@ class ViewModelAPI : ViewModel() {
         apiService.getDetailPokemon(pokemonId)
             .enqueue(object : retrofit2.Callback<DetailPokemon> {
                 override fun onFailure(call: Call<DetailPokemon>, t: Throwable) {
-                    Log.d("", "error loading from API getDetail")
+                    Log.d("aaa", "error loading from API getDetail")
+                    detailPokemon.postValue(null)
                 }
 
                 override fun onResponse(
@@ -74,56 +62,14 @@ class ViewModelAPI : ViewModel() {
                     response: Response<DetailPokemon>
                 ) {
                     if (response.isSuccessful) {
-                        Log.d("aaa", "pokemon loaded from API $pokemonId")
-                        response.body()?.let { detail ->
-                            pokemons.value?.let { pokemonList ->
-                                pokemons.postValue(pokemonList.map { pokemon ->
-                                    if (pokemon.id.equals(pokemonId)) {
-                                        pokemon.detailPokemon = detail
-                                    }
-
-                                    return@map pokemon
-                                })
-                            }
-                        }
                         detailPokemon.postValue(response.body())
                     } else {
                         Log.d("aaa", response.message() + response.code())
+                        detailPokemon.postValue(null)
                     }
                 }
 
             })
-    }
-
-    fun getVersionPokemon(pokemonId: String) {
-        apiService.getDetailPokemon(pokemonId)
-            .enqueue(object : retrofit2.Callback<DetailPokemon> {
-                override fun onFailure(call: Call<DetailPokemon>, t: Throwable) {
-                    Log.d("", "error loading from API getDetail")
-                }
-
-                override fun onResponse(
-                    call: Call<DetailPokemon>,
-                    response: Response<DetailPokemon>
-                ) {
-                    if (response.isSuccessful) {
-                        versionPokemon.postValue(response.body())
-                    } else {
-                        Log.d("aaa", response.message() + response.code())
-                    }
-                }
-            })
-    }
-
-    fun searchPokemon(query: String, list: MutableList<Pokemon>) {
-        var listSearch: MutableList<Pokemon> = mutableListOf()
-        list?.forEachIndexed { index, pokemon ->
-            var name = pokemon.name.toString()
-            if (query.toUpperCase().equals(name.toUpperCase())) {
-                listSearch.add(pokemon)
-            }
-        }
-        pokemons.postValue(listSearch)
     }
 
     fun getSpecies(id: String) {
@@ -131,6 +77,7 @@ class ViewModelAPI : ViewModel() {
             .enqueue(object : retrofit2.Callback<Species> {
                 override fun onFailure(call: Call<Species>, t: Throwable) {
                     Log.d("", "error loading from API getSpecies")
+                    species.postValue(null)
                 }
 
                 override fun onResponse(
@@ -141,17 +88,19 @@ class ViewModelAPI : ViewModel() {
                         species.postValue(response.body())
                     } else {
                         Log.d("aaa", response.message() + response.code())
+                        species.postValue(null)
                     }
                 }
 
             })
     }
 
-    fun getEvolution(id: String){
+    fun getEvolution(id: String) {
         apiService.getEvolution(id)
             .enqueue(object : retrofit2.Callback<Evolution> {
                 override fun onFailure(call: Call<Evolution>, t: Throwable) {
                     Log.d("", "error loading from API getSpecies")
+                    evoultion.postValue(null)
                 }
 
                 override fun onResponse(
@@ -162,9 +111,18 @@ class ViewModelAPI : ViewModel() {
                         evoultion.postValue(response.body())
                     } else {
                         Log.d("aaa", response.message() + response.code())
+                        evoultion.postValue(null)
                     }
                 }
 
             })
+    }
+
+    fun setIdPokemon(id: String){
+            idPokemon.postValue(id)
+    }
+
+    fun setListIdPokemon(listId: MutableList<String>){
+        listIdPokemon.postValue(listId)
     }
 }

@@ -7,11 +7,12 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pokemon.R
 import com.example.pokemon.common.Utis
+import com.example.pokemon.models.detailpokemon.Type
 import com.example.pokemon.models.detailpokemon.Types
 import com.squareup.picasso.Picasso
 
-class TypeAdapter: RecyclerView.Adapter<TypeAdapter.ViewHoder>() {
-    var mType: MutableList<Types> = arrayListOf()
+class TypeAdapter : RecyclerView.Adapter<TypeAdapter.ViewHoder>() {
+    var mType: MutableList<Type> = arrayListOf()
 
     class ViewHoder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var type: ImageView = itemView.findViewById(R.id.img_Type)
@@ -25,19 +26,19 @@ class TypeAdapter: RecyclerView.Adapter<TypeAdapter.ViewHoder>() {
     }
 
     override fun onBindViewHolder(holder: TypeAdapter.ViewHoder, position: Int) {
-       holder.type.setImageResource(
-           Utis.typePokemon(mType[position].type.name)
-       )
+        mType[position].type?.name?.let { Utis.typePokemon(it) }?.let {
+            holder.type.setImageResource(
+                it
+            )
+        }
     }
 
     override fun getItemCount(): Int {
         return mType.size
     }
 
-    fun setList(list: MutableList<Types>?){
-        if (list != null) {
-            this.mType = list
-        }
+    fun setList(list: MutableList<Type>) {
+        this.mType = list
         notifyDataSetChanged()
     }
 }
