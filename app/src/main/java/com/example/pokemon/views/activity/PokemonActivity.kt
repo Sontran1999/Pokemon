@@ -1,5 +1,6 @@
 package com.example.pokemon.views.activity
 
+import android.app.ActivityOptions
 import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -31,6 +32,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
     lateinit var layoutManager: LinearLayoutManager
     lateinit var viewModelAPI: ViewModelAPI
     var keySearch = false
+    var keyDisplay = false
     lateinit var listPokemon: PokemonResponse
     var list: MutableList<DetailPokemon> = arrayListOf()
     private var mDialog: ProgressDialog? = null
@@ -58,11 +60,9 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
 
     private fun registerObserve() {
         replaceData()
-        viewModelAPI.getAllPokemon(list.size)
     }
 
     private fun replaceData() {
-
         viewModelAPI.pokemons.observe(this) {
             if (it != null) {
                 listPokemon = it
@@ -81,11 +81,11 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
                 if (count < listPokemon.results?.size ?: 0) {
                     var id = listPokemon.results?.get(count)?.name
                     if (id != null) {
-//                        viewModelAPI.setIdPokemon(id)
                         viewModelAPI.getDetailPokemon(id)
                     }
                 } else {
                     mDialog?.dismiss()
+                    keyDisplay = true
                     adapter.updatePokemonList(list)
                 }
 
@@ -108,12 +108,12 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
                     list.add(it)
                     adapter.updatePokemonList(list)
                     keySearch = false
+                    keyDisplay = false
                     edtSearch.text.clear()
                 }
             } else if (it != null && !keySearch) {
                 list.add(it)
                 count++
-//                viewModelAPI.getAllPokemon(0)
                 viewModelAPI.setIdPokemon(count.toString())
             }
         }
@@ -132,8 +132,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
             })
         mDialog?.show()
         if (Utis.amIConnected(this)) {
-            adapter.reset()
-            viewModelAPI.getAllPokemon(0)
+            viewModelAPI.getAllPokemon(list.size)
         } else {
             Toast.makeText(this, "Thiết bị chưa kết nối internet", Toast.LENGTH_SHORT).show()
             mDialog?.dismiss()
@@ -154,7 +153,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
     private fun addsScrollListener() {
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (!adapter.isLoading && !recyclerView.canScrollVertically(1)) {
+                if (!adapter.isLoading && !recyclerView.canScrollVertically(1) && keyDisplay) {
                     count = 0
                     viewModelAPI.getAllPokemon(list.size)
                     adapter.setLoadMoreItem(true)
@@ -174,7 +173,6 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
                     if (query != "") {
                         keySearch = true
                         viewModelAPI.getDetailPokemon(edtSearch.text.toString())
-                        Toast.makeText(this, edtSearch.text.toString(), Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(
                             this,
@@ -201,6 +199,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
     }
 
     override fun onRefresh() {
+        count = 0
         list.clear()
         loadFeed()
         srl.isRefreshing = false

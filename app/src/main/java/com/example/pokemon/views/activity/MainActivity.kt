@@ -1,10 +1,13 @@
 package com.example.pokemon.views.activity
 
+import android.app.ActivityOptions.makeCustomAnimation
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.view.WindowManager
+import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import com.example.pokemon.R
 
 class MainActivity : AppCompatActivity() {
@@ -12,17 +15,23 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setActionBar()
+//        val backgroundImage: ImageView = findViewById(R.id.splash)
+//        val slideAnimation = AnimationUtils.loadAnimation(this, R.anim.anim_alpha_in)
+//        backgroundImage.startAnimation(slideAnimation)
         var handler = Handler()
         handler.postDelayed(object : Runnable {
             override fun run() {
-                var intent = Intent(this@MainActivity, PokemonActivity::class.java)
-                startActivity(intent)
                 finish()
-                overridePendingTransition(R.anim.anim_alpha_in, R.anim.anim_alpha_out)
-
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             }
 
         }, 3000)
+
+    }
+
+    override fun finish() {
+        super.finish()
+        startActivity(Intent(this, PokemonActivity::class.java))
     }
 
     fun setActionBar() {
@@ -35,4 +44,5 @@ class MainActivity : AppCompatActivity() {
             WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
         )
     }
+
 }
