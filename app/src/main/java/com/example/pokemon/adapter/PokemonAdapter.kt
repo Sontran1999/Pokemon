@@ -98,7 +98,7 @@ class PokemonAdapter(
     }
 
     fun updatePokemonList(list: MutableList<DetailPokemon>) {
-        this.mDetailPokemon = list
+        this.mDetailPokemon = ArrayList(list)
         setLoadMoreItem(false)
         notifyDataSetChanged()
     }

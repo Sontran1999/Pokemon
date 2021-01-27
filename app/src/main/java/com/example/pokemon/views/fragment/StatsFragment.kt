@@ -42,6 +42,7 @@ class StatsFragment(var detailPokemon: DetailPokemon) : Fragment() {
         val percentMale = (0..100).random()
         val percentFemale = 100 - percentMale
 
+        val pbRate = view.findViewById<ProgressBar>(R.id.pb_CaptureRate)
         val pbGender = view.findViewById<ProgressBar>(R.id.pb_Gender)
         val tvPercentMale = view.findViewById<TextView>(R.id.tv_percentMale)
         val tvPercentFemale = view.findViewById<TextView>(R.id.tv_percentFemale)
@@ -93,7 +94,6 @@ class StatsFragment(var detailPokemon: DetailPokemon) : Fragment() {
         pbGender.progress = percentMale
 
         val percentRate = (0..100).random()
-        val pbRate = view.findViewById<ProgressBar>(R.id.pb_CaptureRate)
         val tvRate = view.findViewById<TextView>(R.id.tv_percentCaptureRate)
         tvRate.text = "$percentRate%"
         pbRate.progress = percentRate

@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, PokemonActivity::class.java))
     }
 
-    fun setActionBar() {
+    private fun setActionBar() {
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayShowTitleEnabled(false)
         supportActionBar?.setHomeButtonEnabled(true)

@@ -25,6 +25,7 @@ class ViewModelAPI : ViewModel() {
     var idPokemon: MutableLiveData<String> = MutableLiveData()
     var listIdPokemon: MutableLiveData<MutableList<String>> = MutableLiveData()
     var searchPokemon: MutableLiveData<MutableList<DetailPokemon>> = MutableLiveData()
+    var call: Call<DetailPokemon>? = null
 
     fun getAllPokemon(listSize: Int) {
         apiService.getPokemon(listSize, 20)
@@ -50,27 +51,28 @@ class ViewModelAPI : ViewModel() {
             })
     }
 
+
     fun getDetailPokemon(pokemonId: String) {
-        apiService.getDetailPokemon(pokemonId)
-            .enqueue(object : retrofit2.Callback<DetailPokemon> {
-                override fun onFailure(call: Call<DetailPokemon>, t: Throwable) {
-                    Log.d("aaa", "error loading from API getDetail")
+        call = apiService.getDetailPokemon(pokemonId)
+        call?.enqueue(object : retrofit2.Callback<DetailPokemon> {
+            override fun onFailure(call: Call<DetailPokemon>, t: Throwable) {
+                Log.d("aaa", "error loading from API getDetail")
+                detailPokemon.postValue(null)
+            }
+
+            override fun onResponse(
+                call: Call<DetailPokemon>,
+                response: Response<DetailPokemon>
+            ) {
+                if (response.isSuccessful) {
+                    detailPokemon.postValue(response.body())
+                } else {
+                    Log.d("aaa", response.message() + response.code())
                     detailPokemon.postValue(null)
                 }
+            }
 
-                override fun onResponse(
-                    call: Call<DetailPokemon>,
-                    response: Response<DetailPokemon>
-                ) {
-                    if (response.isSuccessful) {
-                        detailPokemon.postValue(response.body())
-                    } else {
-                        Log.d("aaa", response.message() + response.code())
-                        detailPokemon.postValue(null)
-                    }
-                }
-
-            })
+        })
     }
 
     fun getSpecies(id: String) {
@@ -119,11 +121,11 @@ class ViewModelAPI : ViewModel() {
             })
     }
 
-    fun setIdPokemon(id: String){
-            idPokemon.postValue(id)
+    fun setIdPokemon(id: String) {
+        idPokemon.postValue(id)
     }
 
-    fun setListIdPokemon(listId: MutableList<String>){
+    fun setListIdPokemon(listId: MutableList<String>) {
         listIdPokemon.postValue(listId)
     }
 
@@ -131,9 +133,9 @@ class ViewModelAPI : ViewModel() {
         var listSearch: MutableList<DetailPokemon> = mutableListOf()
         list?.forEachIndexed { index, pokemon ->
             var name = pokemon.name.toString()
-            if (query.toUpperCase().equals(name.toUpperCase())) {
+            if (name.toUpperCase().contains(query.toUpperCase())) {
                 listSearch.add(pokemon)
-            }else if(query.equals(pokemon.id.toString())){
+            } else if (pokemon.id.toString().contains(query.toUpperCase())) {
                 listSearch.add(pokemon)
             }
             searchPokemon.postValue(listSearch)

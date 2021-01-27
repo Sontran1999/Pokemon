@@ -5,13 +5,19 @@ import android.app.ProgressDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -33,7 +39,8 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
     lateinit var viewModelAPI: ViewModelAPI
     var keySearch = false
     var keyDisplay = false
-    lateinit var listPokemon: PokemonResponse
+    var check = false
+    private lateinit var listPokemon: PokemonResponse
     var list: MutableList<DetailPokemon> = arrayListOf()
     private var mDialog: ProgressDialog? = null
     var count: Int = 0
@@ -49,12 +56,37 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
 
-        edtSearch.setOnKeyListener(this)
+//        edtSearch.setOnKeyListener(this)
         srl.setOnRefreshListener(this)
         setActionBar()
         registerObserve()
         loadFeed()
         addsScrollListener()
+
+        edtSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                if (!check) {
+                    check = true
+                    var handler = Handler()
+                    handler.postDelayed(object : Runnable {
+                        override fun run() {
+                            keySearch = true
+                            viewModelAPI.searchPokemon(edtSearch.text.toString(), list)
+                            check = false
+                        }
+
+                    }, 1000)
+                }
+            }
+
+        })
 
     }
 
@@ -66,7 +98,8 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
     private fun replaceData() {
         viewModelAPI.pokemons.observe(this) {
             if (it != null) {
-                listPokemon = it
+                listPokemon = PokemonResponse(it)
+                count = 0
                 viewModelAPI.setIdPokemon(count.toString())
             } else {
                 mDialog?.dismiss()
@@ -113,9 +146,9 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
                     edtSearch.text.clear()
                 }
             } else if (it != null && !keySearch) {
-                list.add(it)
-                count++
-                viewModelAPI.setIdPokemon(count.toString())
+                    list.add(it)
+                    count++
+                    viewModelAPI.setIdPokemon(count.toString())
             }
         }
 
@@ -133,7 +166,8 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
             })
         mDialog?.show()
         if (Utis.amIConnected(this)) {
-            viewModelAPI.getAllPokemon(list.size)
+            edtSearch.text.clear()
+            viewModelAPI.getAllPokemon(0)
         } else {
             Toast.makeText(this, "Thiết bị chưa kết nối internet", Toast.LENGTH_SHORT).show()
             mDialog?.dismiss()
@@ -155,20 +189,20 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (!adapter.isLoading && !recyclerView.canScrollVertically(1) && keyDisplay) {
-                    count = 0
+                    listPokemon = PokemonResponse()
                     viewModelAPI.getAllPokemon(list.size)
                     adapter.setLoadMoreItem(true)
-                    Log.d("loadmore","poke")
+                    Log.d("loadmore", "poke")
                 }
             }
         })
     }
 
-    private fun registerSearchPokemon(){
+    private fun registerSearchPokemon() {
         viewModelAPI.searchPokemon.observe(this) {
             if (it.size != 0) {
                 adapter.updatePokemonList(it)
-                edtSearch.text.clear()
+//                edtSearch.text.clear()
                 keySearch = false
                 keyDisplay = false
             } else {
@@ -179,10 +213,11 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
                         DialogInterface.OnClickListener { dialogInterface, i ->
                             dialogInterface.cancel()
                         }).show()
-                edtSearch.text.clear()
+//                edtSearch.text.clear()
             }
         }
     }
+
 
     override fun onKey(v: View?, keyCode: Int, event: KeyEvent?): Boolean {
         var query: String = edtSearch.text.toString()
@@ -194,7 +229,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
                     if (query != "") {
                         keySearch = true
 //                        viewModelAPI.getDetailPokemon(edtSearch.text.toString())
-                        viewModelAPI.searchPokemon(edtSearch.text.toString(),list)
+                        viewModelAPI.searchPokemon(edtSearch.text.toString(), list)
                     } else {
                         Toast.makeText(
                             this,
@@ -221,8 +256,9 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
     }
 
     override fun onRefresh() {
-        count = 0
         list.clear()
+        listPokemon = PokemonResponse()
+        viewModelAPI.call?.cancel()
         loadFeed()
         srl.isRefreshing = false
     }
