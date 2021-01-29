@@ -56,37 +56,37 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
 
-//        edtSearch.setOnKeyListener(this)
+        edtSearch.setOnKeyListener(this)
         srl.setOnRefreshListener(this)
         setActionBar()
         registerObserve()
         loadFeed()
         addsScrollListener()
 
-        edtSearch.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-                if (!check) {
-                    check = true
-                    var handler = Handler()
-                    handler.postDelayed(object : Runnable {
-                        override fun run() {
-                            keySearch = true
-                            viewModelAPI.searchPokemon(edtSearch.text.toString(), list)
-                            check = false
-                        }
-
-                    }, 1000)
-                }
-            }
-
-        })
+//        edtSearch.addTextChangedListener(object : TextWatcher {
+//            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+//
+//            }
+//
+//            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+//            }
+//
+//            override fun afterTextChanged(s: Editable?) {
+//                if (!check) {
+//                    check = true
+//                    var handler = Handler()
+//                    handler.postDelayed(object : Runnable {
+//                        override fun run() {
+//                            keySearch = true
+//                            viewModelAPI.searchPokemon(edtSearch.text.toString(), list)
+//                            check = false
+//                        }
+//
+//                    }, 1000)
+//                }
+//            }
+//
+//        })
 
     }
 
@@ -202,7 +202,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
         viewModelAPI.searchPokemon.observe(this) {
             if (it.size != 0) {
                 adapter.updatePokemonList(it)
-//                edtSearch.text.clear()
+                edtSearch.text.clear()
                 keySearch = false
                 keyDisplay = false
             } else {
@@ -213,7 +213,7 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
                         DialogInterface.OnClickListener { dialogInterface, i ->
                             dialogInterface.cancel()
                         }).show()
-//                edtSearch.text.clear()
+                edtSearch.text.clear()
             }
         }
     }
@@ -228,8 +228,8 @@ class PokemonActivity : AppCompatActivity(), View.OnKeyListener,
                 ) {
                     if (query != "") {
                         keySearch = true
-//                        viewModelAPI.getDetailPokemon(edtSearch.text.toString())
-                        viewModelAPI.searchPokemon(edtSearch.text.toString(), list)
+                        viewModelAPI.getDetailPokemon(edtSearch.text.toString())
+//                        viewModelAPI.searchPokemon(edtSearch.text.toString(), list)
                     } else {
                         Toast.makeText(
                             this,

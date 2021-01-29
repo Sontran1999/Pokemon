@@ -23,10 +23,14 @@ import kotlinx.android.synthetic.main.fragment_evolutions.*
 
 class EvolutionsFragment(var detailPokemon: DetailPokemon) : Fragment() {
     lateinit var viewModelAPI: ViewModelAPI
-    var listVersionPokemon = arrayListOf<String>()
+    var listBeforePokemon = arrayListOf<String>()
+    var listAfterPokemon = arrayListOf<String>()
     var listLevelPokemon = arrayListOf<String>()
     var listDetailPokemon: MutableList<DetailPokemon> = arrayListOf()
+    private var listAllVersionPokemon = arrayListOf<ArrayList<String>>()
+    private var listAllDetailPokemon: MutableList<MutableList<DetailPokemon>> = arrayListOf()
     private var index = 0
+    var index2 = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,39 +54,59 @@ class EvolutionsFragment(var detailPokemon: DetailPokemon) : Fragment() {
         var adapter: EvolutionAdapter = EvolutionAdapter(view.context)
         rvEvolutions.adapter = adapter
         adapter.clear()
-        adapter.setList(listDetailPokemon, listLevelPokemon)
+        adapter.setList(listAllDetailPokemon, listLevelPokemon)
 
     }
 
     private fun registerGetEvolution(view: View) {
+        var count = 0
+        var count2 = 0
         viewModelAPI.evoultion.observe(this) {
             if (it != null) {
-                var idVersionOne: String? = it.chain?.species?.url?.let { it1 -> Utis.cutId(it1) }
-                if (idVersionOne != null) {
-                    listVersionPokemon.add(idVersionOne)
-                }
                 var evolution = it.chain?.evolvesTo
-                while (evolution?.isNotEmpty() == true) {
+                if (it.chain?.evolvesTo?.isNotEmpty() == true) {
+                    while (count < it.chain?.evolvesTo?.size!!) {
+                        var idBeforeEvolution: String? =
+                            it.chain?.species?.url?.let { it1 -> Utis.cutId(it1) }
+                        if (idBeforeEvolution != null) {
+                            listBeforePokemon.add(idBeforeEvolution)
+                        }
+                        while (count2 < evolution?.size!!) {
+                                evolution[count2].species?.url?.let { it1 -> Utis.cutId(it1) }
+                                    ?.let { it2 ->
+                                        listAfterPokemon.add(it2)
+                                    }
 
-                    evolution[0].species?.url?.let { it1 -> Utis.cutId(it1) }?.let { it2 ->
-                        listVersionPokemon.add(
-                            it2
-                        )
+                                listLevelPokemon.add(evolution[count2].evolutionDetails?.get(0)?.minLevel.toString())
+                                if (evolution[count2].evolvesTo?.isNotEmpty() == true) {
+                                    evolution[count2].species?.url?.let { it1 -> Utis.cutId(it1) }
+                                        ?.let { it2 ->
+                                            listBeforePokemon.add(it2)
+                                        }
+                                    evolution = evolution[count2].evolvesTo
+                                } else {
+                                    count2++
+                                }
+                        }
+                        count++
                     }
-
-                    listLevelPokemon.add(evolution[0].evolutionDetails?.get(0)?.minLevel.toString())
-
-                    evolution = evolution[0].evolvesTo
-
                 }
-                viewModelAPI.setListIdPokemon(listVersionPokemon)
-
+                listAllVersionPokemon.add(listBeforePokemon)
+                listAllVersionPokemon.add(listAfterPokemon)
+                viewModelAPI.setListIdPokemon(listAllVersionPokemon)
             }
         }
 
         viewModelAPI.listIdPokemon.observe(this) {
             if (index < it.size) {
-                viewModelAPI.getDetailPokemon(it[index])
+                if (index2 < it[index].size) {
+                    viewModelAPI.getDetailPokemon(it[index][index2])
+                } else {
+                    listAllDetailPokemon.add(ArrayList(listDetailPokemon))
+                    index++
+                    index2 = 0
+                    viewModelAPI.setListIdPokemon(listAllVersionPokemon)
+                }
             } else {
                 showViewEvolution(view)
             }
@@ -92,9 +116,12 @@ class EvolutionsFragment(var detailPokemon: DetailPokemon) : Fragment() {
     private fun registerDetail() {
         viewModelAPI.detailPokemon.observe(this) {
             if (it != null) {
+                if(index2 == 0){
+                    listDetailPokemon.clear()
+                }
                 listDetailPokemon.add(it)
-                index++
-                viewModelAPI.setListIdPokemon(listVersionPokemon)
+                index2++
+                viewModelAPI.setListIdPokemon(listAllVersionPokemon)
 
             }
         }

@@ -19,8 +19,11 @@ import kotlinx.android.synthetic.main.activity_detail.*
 class EvolutionAdapter(var mContext: Context) :
     RecyclerView.Adapter<EvolutionAdapter.ViewHolder>() {
 
-    private var mList: MutableList<DetailPokemon> = arrayListOf()
+    private var mListBefore: MutableList<DetailPokemon> = arrayListOf()
+    private var mListAfter: MutableList<DetailPokemon> = arrayListOf()
     private var mListLevel: MutableList<String> = arrayListOf()
+    var index1 = 0
+    var index2 = 0
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val avtAfter: ImageView = itemView.findViewById(R.id.img_afterPokemon)
@@ -30,14 +33,19 @@ class EvolutionAdapter(var mContext: Context) :
         val level: TextView = itemView.findViewById(R.id.tv_level)
     }
 
-    fun setList(list: MutableList<DetailPokemon>, listLevel: MutableList<String>) {
-        this.mList = list
+    fun setList(
+        list: MutableList<MutableList<DetailPokemon>>,
+        listLevel: MutableList<String>
+    ) {
+        this.mListBefore = list[0]
+        this.mListAfter = list[1]
         this.mListLevel = listLevel
         notifyDataSetChanged()
     }
 
     fun clear() {
-        mList.clear()
+        mListBefore.clear()
+        mListAfter.clear()
         notifyDataSetChanged()
     }
 
@@ -49,16 +57,22 @@ class EvolutionAdapter(var mContext: Context) :
     }
 
     override fun getItemCount(): Int {
-        return if (mList.size > 1) {
-            mList.size - 1
-        } else mList.size
+        return mListAfter.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        Picasso.with(mContext)
-            .load(mList[position].sprites?.other?.officialArtwork?.frontDefault)
-            .into(holder.avtBefore)
-        holder.nameBefore.text = mList[position].name
+        if (index1 < mListBefore.size) {
+            Picasso.with(mContext)
+                .load(mListBefore[position].sprites?.other?.officialArtwork?.frontDefault)
+                .into(holder.avtBefore)
+            holder.nameBefore.text = mListBefore[position].name
+            index1++
+        } else {
+            Picasso.with(mContext)
+                .load(mListBefore[position - 1].sprites?.other?.officialArtwork?.frontDefault)
+                .into(holder.avtBefore)
+            holder.nameBefore.text = mListBefore[position - 1].name
+        }
         if (mListLevel.size != 0 && mListLevel[position] != "null") {
             holder.level.text = "Lv. " + mListLevel[position]
         } else {
@@ -66,7 +80,7 @@ class EvolutionAdapter(var mContext: Context) :
         }
 
         holder.level.setTextColor(
-            mList[position].types?.get(0)?.type?.name?.let { Utis.typeColor(it) }?.let {
+            mListAfter[position].types?.get(0)?.type?.name?.let { Utis.typeColor(it) }?.let {
                 ContextCompat.getColor(
                     mContext,
                     it
@@ -77,17 +91,11 @@ class EvolutionAdapter(var mContext: Context) :
                 )
             }
         )
-        if (mList.size > 1) {
-            Picasso.with(mContext)
-                .load(mList[position + 1].sprites?.other?.officialArtwork?.frontDefault)
-                .into(holder.avtAfter)
-            holder.nameAfter.text = mList[position + 1].name
-        } else {
-            Picasso.with(mContext)
-                .load(mList[position].sprites?.other?.officialArtwork?.frontDefault)
-                .into(holder.avtAfter)
-            holder.nameAfter.text = mList[position].name
-        }
+        Picasso.with(mContext)
+            .load(mListAfter[position].sprites?.other?.officialArtwork?.frontDefault)
+            .into(holder.avtAfter)
+        holder.nameAfter.text = mListAfter[position].name
+
     }
 
 }

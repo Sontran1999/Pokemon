@@ -23,7 +23,7 @@ class ViewModelAPI : ViewModel() {
     var species: MutableLiveData<Species> = MutableLiveData()
     var evoultion: MutableLiveData<Evolution> = MutableLiveData()
     var idPokemon: MutableLiveData<String> = MutableLiveData()
-    var listIdPokemon: MutableLiveData<MutableList<String>> = MutableLiveData()
+    var listIdPokemon: MutableLiveData<MutableList<ArrayList<String>>> = MutableLiveData()
     var searchPokemon: MutableLiveData<MutableList<DetailPokemon>> = MutableLiveData()
     var call: Call<DetailPokemon>? = null
 
@@ -125,7 +125,7 @@ class ViewModelAPI : ViewModel() {
         idPokemon.postValue(id)
     }
 
-    fun setListIdPokemon(listId: MutableList<String>) {
+    fun setListIdPokemon(listId: MutableList<ArrayList<String>>) {
         listIdPokemon.postValue(listId)
     }
 
