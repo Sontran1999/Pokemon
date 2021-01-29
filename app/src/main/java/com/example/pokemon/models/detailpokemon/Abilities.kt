@@ -1,11 +1,18 @@
 package com.example.pokemon.models.detailpokemon
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
+class Abilities {
+	@SerializedName("ability")
+	@Expose
+	var ability: Ability? = null
 
-data class Abilities (
+	@SerializedName("is_hidden")
+	@Expose
+	var isHidden: Boolean? = null
 
-	@SerializedName("ability") val ability : Ability,
-	@SerializedName("is_hidden") val is_hidden : Boolean,
-	@SerializedName("slot") val slot : Int
-)
+	@SerializedName("slot")
+	@Expose
+	var slot: Int? = null
+}

@@ -1,11 +1,19 @@
 package com.example.pokemon.models.detailpokemon
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 
-data class GenerationII (
+class GenerationII {
+	@SerializedName("crystal")
+	@Expose
+	var crystal: Crystal? = null
 
-	@SerializedName("crystal") val crystal : Crystal,
-	@SerializedName("gold") val gold : Gold,
-	@SerializedName("silver") val silver : Silver
-)
+	@SerializedName("gold")
+	@Expose
+	var gold: Gold? = null
+
+	@SerializedName("silver")
+	@Expose
+	var silver: Silver? = null
+}

@@ -1,10 +1,15 @@
 package com.example.pokemon.models.detailpokemon
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
-data class Stats (
 
-	@SerializedName("base_stat") val base_stat : Int,
-	@SerializedName("effort") val effort : Int,
-	@SerializedName("stat") val stat : Stat
-)
+class Stats {
+	@SerializedName("name")
+	@Expose
+	var name: String? = null
+
+	@SerializedName("url")
+	@Expose
+	var url: String? = null
+}

@@ -1,11 +1,11 @@
-package com.example.pokemon.models.pokemons
+package com.example.pokemon.models.species
 
 import com.google.gson.annotations.Expose
 
 import com.google.gson.annotations.SerializedName
 
 
-class Result {
+class GrowthRate {
     @SerializedName("name")
     @Expose
     var name: String? = null
@@ -13,5 +13,4 @@ class Result {
     @SerializedName("url")
     @Expose
     var url: String? = null
-
 }

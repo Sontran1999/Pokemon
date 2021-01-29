@@ -1,9 +1,15 @@
 package com.example.pokemon.models.detailpokemon
 
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
-data class Other (
 
-	@SerializedName("dream_world") val dream_world : DreamWorld,
-	@SerializedName("official-artwork") val officialArtwork : OfficialArtwork
-)
+class Other {
+	@SerializedName("dream_world")
+	@Expose
+	var dreamWorld: DreamWorld? = null
+
+	@SerializedName("official-artwork")
+	@Expose
+	var officialArtwork: OfficialArtwork? = null
+}

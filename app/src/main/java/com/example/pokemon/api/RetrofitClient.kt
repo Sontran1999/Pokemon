@@ -29,7 +29,7 @@ class RetrofitClient {
             .connectTimeout(5000, TimeUnit.MILLISECONDS)
             .retryOnConnectionFailure(true)
             .addInterceptor(interceptor)
-            .addInterceptor(logger)
+//            .addInterceptor(logger)
             .build()
         private var retrofit: Retrofit? = null
         fun getClient(baseUrl: String?): Retrofit? {
